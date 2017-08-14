@@ -36,7 +36,7 @@ int streq(s1,s2)
 {
 	int f=0;
 	int e;
-	while((e = (s1[f]==s2[f])) && (s1[f]!=NIL && s2[f]!=NIL)) 
+	while((e = (s1[f]==s2[f])) && (s1[f]!=NIL && s2[f]!=NIL))
 		f++;
 	return e;
 }
@@ -67,7 +67,7 @@ void xyzCode(x, y, z, g)
 	char x[], y[], z[], g[];
 {
 	char b[255];
-	if(isNumNull(x) && isNumNull(y) && isNumNull(z)){ 
+	if(isNumNull(x) && isNumNull(y) && isNumNull(z)){
 		b[0]=0;
 		//if params 1, 2, and 3 are there, input all of them
 		if(x[0]!=0 && y[0]!=0 && z[0]!=0)
@@ -83,7 +83,7 @@ void xyzCode(x, y, z, g)
 }
 
 char *getCommandHelp(char*) ;
-	
+
 //command functions
 void homeFn(char *p1,char *p2,char *p3) {
 	sendg("G28");
@@ -135,14 +135,14 @@ void helpFn(char *p1,char *p2,char *p3) {
 	else
 		printf("%s", getCommandHelp(p1));
 		//printf("TEST PARAMS 0:%s", p1);
-	
+
 }
 //NUMCOMMANDS is above helpFn!
 //command array
 Command commands[] = {
 	{"home", "Usage: home \nHomes the printer (sends G28).\n", &homeFn},
-	{"move", "Usage: move <X value> <Y value> [Z value]\nMoves relative to your current position. If a Z value is left out, gcc will assume the current Z position.\n", &moveFn/*or "moveFn"*/},
-	{"moveto", "Usage: moveto <X coordinate> <Y coordinate> [Z coordinate]\nMoves to an absolute position. If a Z coordinate is left out, gcc will assume the current Z position.\n", &movetoFn},
+	{"move", "Usage: move <X value> <Y value> [Z value]\nMoves relative to your current position. If a Z value is left out, Gcs will assume the current Z position.\n", &moveFn/*or "moveFn"*/},
+	{"moveto", "Usage: moveto <X coordinate> <Y coordinate> [Z coordinate]\nMoves to an absolute position. If a Z coordinate is left out, Gcs will assume the current Z position.\n", &movetoFn},
 	{"laseron", "Usage: laseron\nTurns the laser on (hidden).\n", &laseronFn},
 	{"laseroff", "Usage: laseroff\nTurns the laser off (hidden).\n", &laseroffFn},
 	{"setspeed", "Usage: setspeed <speed>\nSets the speed of movement.\n", &setspeedFn},
@@ -169,7 +169,7 @@ if (cp == NIL) {
 	sprintf(buffer,"\"%s\" is not a command\n",command);
 	return buffer;
 }
-else return cp->help_text;	
+else return cp->help_text;
 }
 
 #ifdef TESTING
@@ -223,13 +223,13 @@ while(done==0){
 		params[squid][p]=NIL;
 		squid++;
 	}
-		
+
 	Command *cp = findCommand(command);
 	if (cp != NIL) {
 		(*cp->fn)(params[0],params[1],params[2]);
-	} 
+	}
 	else {
-				
+
 		//GCODE command
 		if (buffer[0]=='G') {
 			sendg(buffer);
@@ -243,7 +243,7 @@ while(done==0){
 
 	f=0;
 }
-	
+
 }
 
 #endif
