@@ -8,6 +8,8 @@
 #include "test_framework.h"
 #endif
 
+#define VERSION "0.1.01"
+
 #define LINE_SIZE 1000
 #define NIL 0
 #define PARAM_SIZE 5
@@ -168,12 +170,12 @@ Command *findCommand(char *command){
 	return NIL;
 }
 
-char buffer[255];
+char input[255];
 char *getCommandHelp(char *command){
 	Command *cp = findCommand(command);
 	if (cp == NIL) {
-		sprintf(buffer,"\"%s\" is not a command\n",command);
-		return buffer;
+		sprintf(input,"\"%s\" is not a command\n",command);
+		return input;
 	}
 	else return cp->help_text;
 }
@@ -183,10 +185,10 @@ char *getCommandHelp(char *command){
 #else
 
 int main(){
-	char c,buffer[LINE_SIZE],command[15];
+	char c,input[LINE_SIZE],command[15];
 	int f=0, p, squid, i;
 
-	printf("Gcs version 0.0.1 created by Will Harris-Braun, last updated 8/14/2017.\n");
+	printf("Gcs (C-code compiler) version "VERSION", Copyright (C) 2014 William Harris-Braun\nGcs comes with ABSOLUTELY NO WARRANTY. For details see the GNU General Public\nLicense. This is free software, and you are welcome to redistribute it as\noutlined in the GNU General Public License.\n");
 
 	fp=fopen("/dev/ttyACM0", "w");
 	if(fp==0){
@@ -209,25 +211,25 @@ int main(){
 		// get a line from terminal as a str
 		f=0;
 		while((c = getchar()) !='\n') {
-			buffer[f] = c;
+			input[f] = c;
 			f++;
 		}
-		buffer[f]=NIL;
-		// parse command from buffer
+		input[f]=NIL;
+		// parse command from input
 		f=0;
-		while(buffer[f]!=' ' && buffer[f]!=NIL) {
-			command[f]=buffer[f];
+		while(input[f]!=' ' && input[f]!=NIL) {
+			command[f]=input[f];
 			f++;
 		}
 		command[f]=NIL;
-		// parse params from buffer
+		// parse params from input
 		squid=0;
 		for(i=0; i<PARAMNUM; params[i++][0]=0);
-		while(buffer[f]!=NIL){
+		while(input[f]!=NIL){
 			p=0;
 			f++;
-			while(buffer[f]!=' ' && buffer[f]!=NIL) {
-				params[squid][p]=buffer[f];
+			while(input[f]!=' ' && input[f]!=NIL) {
+				params[squid][p]=input[f];
 				f++; p++;
 			}
 			params[squid][p]=NIL;
@@ -241,13 +243,13 @@ int main(){
 		else {
 
 			// GCODE command
-			if (buffer[0]=='G') {
-				sendg(buffer);
+			if (input[0]=='G') {
+				sendg(input);
 			}
 			// command not found
 			else printf("Command not found\n");
 
-			// printf("%s\n",buffer);
+			// printf("%s\n",input);
 		}
 
 
