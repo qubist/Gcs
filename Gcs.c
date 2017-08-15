@@ -1,7 +1,8 @@
 #include <stdio.h>
 #include <signal.h>
+#include <string.h>
 
-//#define TESTING
+// #define TESTING
 
 #ifdef TESTING
 #include "test_framework.h"
@@ -13,8 +14,9 @@
 #define PARAMNUM 4
 FILE *fp;
 
-//global declarations
+// global declarations
 int printgcode = 1;
+// declaring the Command struct with name, help text, and function to call
 typedef struct{
 	char *name;
 	char *help_text;
@@ -24,26 +26,26 @@ typedef struct{
 char b[255], params[PARAMNUM][PARAM_SIZE];
 int done=0;
 
-//macro vars
+// macro vars
 char macroname[40];
 int macrorecording=0;
 
-//functions that are used in main
+// functions that are used in main
 
-//string equals function
+// string equals function
 int streq(s1,s2)
-	char s1[],s2[];
+char s1[],s2[];
 {
 	int f=0;
 	int e;
 	while((e = (s1[f]==s2[f])) && (s1[f]!=NIL && s2[f]!=NIL))
-		f++;
+	f++;
 	return e;
 }
 
-//function for sending GCODE to printer
+// function for sending GCODE to printer
 void sendg(gcode)
-	char gcode[];
+char gcode[];
 {
 	if(gcode[0]!=0) {
 		if (fp != 0) fprintf(fp, "%s\n", gcode);
@@ -52,7 +54,7 @@ void sendg(gcode)
 }
 
 int isNumNull(t)
-	char t[];
+char t[];
 {
 	int f=0;
 	while(t[f]!=0) {
@@ -62,20 +64,20 @@ int isNumNull(t)
 	return 1;
 }
 
-//function for creating GCODE
+// function for creating GCODE
 void xyzCode(x, y, z, g)
-	char x[], y[], z[], g[];
+char x[], y[], z[], g[];
 {
 	char b[255];
 	if(isNumNull(x) && isNumNull(y) && isNumNull(z)){
 		b[0]=0;
-		//if params 1, 2, and 3 are there, input all of them
+		// if params 1, 2, and 3 are there, input all of them
 		if(x[0]!=0 && y[0]!=0 && z[0]!=0)
-			sprintf(b,"%s X%s Y%s Z%s", g, x, y, z);
-		//if params 1 and 2 are actual things and not param 3, don't send Z
+		sprintf(b,"%s X%s Y%s Z%s", g, x, y, z);
+		// if params 1 and 2 are actual things and not param 3, don't send Z
 		else if(x[0]!=0 && y[0]!=0)
-			sprintf(b,"%s X%s Y%s", g, x, y);
-		//if params 1 or 2 aren't there, return an error and print the "wrong" GCODE
+		sprintf(b,"%s X%s Y%s", g, x, y);
+		// if params 1 or 2 aren't there, return an error and print the "wrong" GCODE
 		else printf("This command requires at least two parameters\n");
 		sendg(b);
 	}
@@ -84,7 +86,7 @@ void xyzCode(x, y, z, g)
 
 char *getCommandHelp(char*) ;
 
-//command functions
+// command functions
 void homeFn(char *p1,char *p2,char *p3) {
 	sendg("G28");
 }
@@ -105,8 +107,14 @@ void setspeedFn(char *p1,char *p2,char *p3) {
 	sendg(b);
 }
 void recordFn(char *p1,char *p2,char *p3) {
-	macrorecording=1;
-	//macroname=params[0];
+	if (macrorecording == 0 && *p1 == 0) {
+		printf("This command requires one parameter\n");
+	}
+	else if (macrorecording == 0) {
+		macrorecording=1;
+		strcpy(macroname, params[0]);
+	}
+	else macrorecording=0;
 }
 void togglegcodeFn(char *p1,char *p2,char *p3) {
 	if (printgcode == 1) printgcode = 0;
@@ -123,22 +131,20 @@ void quitFn(char *p1,char *p2,char *p3) {
 Command commands[] ;
 
 void helpFn(char *p1,char *p2,char *p3) {
-	//needs rennovation
 	if(*p1 == 0) {
-		printf("--Help--\nUse \"help help\" to get help on how to use \"help\"\n\nCommands:\n");
+		printf("Usage: help [command]\nCommands:\n");
 		for(int i = 0; i<NUM_COMMANDS; i++){
-			printf("%s\n", commands[i].name);
+			printf("  %s\n", commands[i].name);
 		}
-//		printf("--Help--\nUse \"help help\" to get help on how to use \"help\"\n\nhome\nmoveto\nmove\nsetspeed\nrecord\ntogglegcode\nquit\nhelp\n");
-		printf("Consider yourself helped\n");
+		printf("Consider yourself helped.\n");
 	}
 	else
-		printf("%s", getCommandHelp(p1));
-		//printf("TEST PARAMS 0:%s", p1);
+	printf("%s", getCommandHelp(p1));
+	// printf("TEST PARAMS 0:%s", p1);
 
 }
-//NUMCOMMANDS is above helpFn!
-//command array
+// Look up there ^^^! NUMCOMMANDS is above helpFn!
+// command array
 Command commands[] = {
 	{"home", "Usage: home \nHomes the printer (sends G28).\n", &homeFn},
 	{"move", "Usage: move <X value> <Y value> [Z value]\nMoves relative to your current position. If a Z value is left out, Gcs will assume the current Z position.\n", &moveFn/*or "moveFn"*/},
@@ -150,26 +156,26 @@ Command commands[] = {
 	{"togglegcode", "Usage: togglegcode\nToggles showing GCODE when sending it to printer.\n", &togglegcodeFn},
 	{"quit", "Usage: quit\nQuits.\n", &quitFn},
 	{"help", "Usage: help [command]\nShows a command list (if there are no parameters) or shows the help text of a command.\n", &helpFn},
-//	{"", "Usage: \n.", &Fn},
+	// {"", "Usage: \n.", &Fn},
 };
 
 Command *findCommand(char *command){
-for(int i = 0; i<NUM_COMMANDS; i++){
-	if(streq(command, commands[i].name)){
-		return &commands[i];
+	for(int i = 0; i<NUM_COMMANDS; i++){
+		if(streq(command, commands[i].name)){
+			return &commands[i];
+		}
 	}
-}
-return NIL;
+	return NIL;
 }
 
 char buffer[255];
 char *getCommandHelp(char *command){
-Command *cp = findCommand(command);
-if (cp == NIL) {
-	sprintf(buffer,"\"%s\" is not a command\n",command);
-	return buffer;
-}
-else return cp->help_text;
+	Command *cp = findCommand(command);
+	if (cp == NIL) {
+		sprintf(buffer,"\"%s\" is not a command\n",command);
+		return buffer;
+	}
+	else return cp->help_text;
 }
 
 #ifdef TESTING
@@ -177,72 +183,76 @@ else return cp->help_text;
 #else
 
 int main(){
-char c,buffer[LINE_SIZE],command[15];
-int f=0, p, squid, i;
+	char c,buffer[LINE_SIZE],command[15];
+	int f=0, p, squid, i;
 
-fp=fopen("/dev/ttyACM0", "w");
-if(fp==0){
-	fp=fopen("/dev/ttyACM1", "w");
-}
+	printf("Gcs version 0.0.1 created by Will Harris-Braun, last updated 8/14/2017.\n");
 
-if (fp==0) {
-	printf("Unable to connect to printer\nRunning in unconnected mode\n");
-	//    return(1);
-}
+	fp=fopen("/dev/ttyACM0", "w");
+	if(fp==0){
+		fp=fopen("/dev/ttyACM1", "w");
+	}
 
-//the loop
-while(done==0){
-	if(macrorecording==1){
-		printf("%s >", macroname);
+	if (fp==0) {
+		printf("Warning: Unable to connect to printer!\nWarning: Running in unconnected mode\n");
+		//    return(1);
 	}
-	else putchar('>');
-	//get a line from terminal as a str
-	f=0;
-	while((c = getchar()) !='\n') {
-		buffer[f] = c;
-		f++;
-	}
-	buffer[f]=NIL;
-	//parse command from buffer
-	f=0;
-	while(buffer[f]!=' ' && buffer[f]!=NIL) {
-		command[f]=buffer[f];
-		f++;
-	}
-	command[f]=NIL;
-	//parse params from buffer
-	squid=0;
-	for(i=0; i<PARAMNUM; params[i++][0]=0);
-	while(buffer[f]!=NIL){
-		p=0;
-		f++;
+
+	// the loop
+	while(done==0){
+		// print macro name into prompt
+		if(macrorecording==1){
+			printf("%s >", macroname);
+		}
+		// print prompt
+		else putchar('>');
+		// get a line from terminal as a str
+		f=0;
+		while((c = getchar()) !='\n') {
+			buffer[f] = c;
+			f++;
+		}
+		buffer[f]=NIL;
+		// parse command from buffer
+		f=0;
 		while(buffer[f]!=' ' && buffer[f]!=NIL) {
-			params[squid][p]=buffer[f];
-			f++; p++;
+			command[f]=buffer[f];
+			f++;
 		}
-		params[squid][p]=NIL;
-		squid++;
-	}
-
-	Command *cp = findCommand(command);
-	if (cp != NIL) {
-		(*cp->fn)(params[0],params[1],params[2]);
-	}
-	else {
-
-		//GCODE command
-		if (buffer[0]=='G') {
-			sendg(buffer);
+		command[f]=NIL;
+		// parse params from buffer
+		squid=0;
+		for(i=0; i<PARAMNUM; params[i++][0]=0);
+		while(buffer[f]!=NIL){
+			p=0;
+			f++;
+			while(buffer[f]!=' ' && buffer[f]!=NIL) {
+				params[squid][p]=buffer[f];
+				f++; p++;
+			}
+			params[squid][p]=NIL;
+			squid++;
 		}
-		//command not found
-		else printf("Command not found\n");
 
-		//    printf("%s\n",buffer);
+		Command *cp = findCommand(command);
+		if (cp != NIL) {
+			(*cp->fn)(params[0],params[1],params[2]);
+		}
+		else {
+
+			// GCODE command
+			if (buffer[0]=='G') {
+				sendg(buffer);
+			}
+			// command not found
+			else printf("Command not found\n");
+
+			// printf("%s\n",buffer);
+		}
+
+
+		f=0;
 	}
-
-
-	f=0;
-}
 
 }
 
